@@ -13,7 +13,11 @@ The `R.validate()` method will throw a detailed error about the problems that oc
 
 *Example testcase*
 ```swift
-XCTAssertNoThrow(try R.validate())
+do {
+  try R.validate()
+} catch {
+	XCTFail(error)
+}
 ```
 
 ## Images
@@ -32,17 +36,6 @@ let settingsIcon = R.image.settingsIcon()
 let gradientBackground = R.image.gradientJpg()
 ```
 
-### Support for assets grouped in folders
-
-Selecting "Provides Namespace" results in grouping assets:
-
-![Assets folders structure](Images/NamespacedSubfolders.png)
-
-Use like so:
-```swift
-let image = R.image.menu.icons.first()
-```
-
 ## Custom fonts
 
 *Vanilla*
@@ -54,8 +47,6 @@ let lightFontTitle = UIFont(name: "Acme-Light", size: 22)
 ```swift
 let lightFontTitle = R.font.acmeLight(size: 22)
 ```
-
-**Tip:** Also want this for system fonts? Take a look at the [UIFontComplete](https://github.com/Nirma/UIFontComplete) library, has a similar solution for the fonts Apple ships with iOS.
 
 ## Resource files
 
@@ -75,13 +66,18 @@ let jsonPath = R.file.seedDataJson.path()
 
 *Vanilla*
 ```swift
-view.backgroundColor = UIColor(named: "primary background")
+label.backgroundColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 0.5)
+label.textColor = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1.0)
 ```
 
 *With R.swift*
 ```swift
-view.backgroundColor = R.color.primaryBackground()
+// Colors are extracted from the *.clr files that are in your Xcode project
+label.backgroundColor = R.color.appColors.backgroundColor()
+label.textColor = R.color.appColors.textColor()
 ```
+
+There are some points to keep in mind when using Color palettes, see [About Colors](Colors.md)
 
 ## Localized strings
 
@@ -116,7 +112,7 @@ let progress = R.string.localizable.copyProgress(completed: 4, total: 23)
 ```swift
 let storyboard = UIStoryboard(name: "Main", bundle: nil)
 let initialTabBarController = storyboard.instantiateInitialViewController() as? UITabBarController
-let settingsController = storyboard.instantiateViewController(withIdentifier: "settingsController") as? SettingsController
+let settingsController = storyboard.instantiateViewController(withIdentifier: "settingsController") as? SettingsControllerSettingsController
 ```
 
 *With R.swift*
@@ -175,7 +171,7 @@ let viewControllerWithNib = CustomViewController(nibName: "CustomView", bundle: 
 ```swift
 let nameOfNib = R.nib.customView.name
 let customViewNib = R.nib.customView()
-let rootViews = R.nib.customView.instantiate(withOwner: nil)
+let rootViews = R.nib.customView.instantiateWithOwner(nil)
 let customView = R.nib.customView.firstView(owner: nil)
 
 let viewControllerWithNib = CustomViewController(nib: R.nib.customView)
@@ -193,7 +189,7 @@ class FaqAnswerController: UITableViewController {
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let textCell = tableView.dequeueReusableCell(withIdentifier: "TextCellIdentifier", for: indexPath) as! TextCell
+    let textCell = tableView.dequeueReusableCellWithIdentifier("TextCellIdentifier", forIndexPath: indexPath) as! TextCell
     textCell.mainLabel.text = "Hello World"
     return textCell
   }
@@ -201,9 +197,6 @@ class FaqAnswerController: UITableViewController {
 ```
 
 *With R.swift*
-
-On your reusable cell Interface Builder "Attributes" inspector panel, set the cell "Identifier" field to the same value you are going to register and dequeue.
-
 ```swift
 class FaqAnswerController: UITableViewController {
   override func viewDidLoad() {
@@ -212,7 +205,7 @@ class FaqAnswerController: UITableViewController {
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let textCell = tableView.dequeueReusableCell(withIdentifier: R.reuseIdentifier.textCell, for: indexPath)!
+    let textCell = tableView.dequeueReusableCellWithIdentifier(R.nib.textCell.identifier, forIndexPath: indexPath)!
     textCell.mainLabel.text = "Hello World"
     return textCell
   }
@@ -231,7 +224,7 @@ class RecentsController: UICollectionViewController {
   }
 
   override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TalkCellIdentifier", for: indexPath) as! TalkCell
+    let cell = collectionView.dequeueReusableCellWithReuseIdentifier("TalkCellIdentifier", forIndexPath: indexPath) as! TalkCell
     cell.configureCell("Item \(indexPath.item)")
     return cell
   }
@@ -239,9 +232,6 @@ class RecentsController: UICollectionViewController {
 ```
 
 *With R.swift*
-
-On your reusable cell Interface Builder "Attributes" inspector panel, set the cell "Identifier" field to the same value you are going to register and dequeue.
-
 ```swift
 class RecentsController: UICollectionViewController {
   override func viewDidLoad() {
@@ -250,7 +240,7 @@ class RecentsController: UICollectionViewController {
   }
 
   override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: R.reuseIdentifier.talkCell, for: indexPath)!
+    let cell = collectionView.dequeueReusableCellWithReuseIdentifier(R.reuseIdentifier.talkCell, forIndexPath: indexPath)!
     cell.configureCell("Item \(indexPath.item)")
     return cell
   }
